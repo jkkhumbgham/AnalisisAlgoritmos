@@ -224,7 +224,7 @@ public class FuncionesJuego {
             return false;
         }
 
-        int target = existing + cantidad; // resultado final entre esas islas
+        int target = existing + cantidad;
         if (horizontal) {
             int fila = x1;
             for (int j = Math.min(y1, y2) + 1; j < Math.max(y1, y2); j++) {

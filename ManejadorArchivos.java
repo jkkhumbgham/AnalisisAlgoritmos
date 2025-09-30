@@ -18,7 +18,7 @@ public class ManejadorArchivos {
         int filas = Integer.parseInt(partes[0]);
         int columnas = Integer.parseInt(partes[1]);
 
-        lectura = new ArrayList<>(); // asegúrate de reiniciar la lista
+        lectura = new ArrayList<>();
 
         for (int i = 0; i < filas; i++) {
             String linea = br.readLine();
