@@ -2,23 +2,19 @@ import java.util.List;
 
 public class FuncionesJuego {
 
-    private static boolean inBounds(int x, int y, List<List<String>> mapa) {
+    //La funcion revisa si los datos dados por el usuario estan dentro del mapa esperado
+    private static boolean enRango(int x, int y, List<List<String>> mapa) {
         return x >= 0 && x < mapa.size() && y >= 0 && y < mapa.get(0).size();
     }
 
+    //funcion revisa si la celda dada es una isla o no
     private static boolean esIsla(String celda) {
-        return celda != null && celda.matches("[1-8](\\s[-=|#║]*)?");
+        return celda != null && celda.matches("[1-8](\\s[-=|║]*)?");
     }
 
-    private static int conexionesActuales(String celda) {
-        if (celda == null) return 0;
-        if (celda.contains("=") || celda.contains("║")) return 2; // doble puente
-        if (celda.contains("-") || celda.contains("|")) return 1; // simple puente
-        return 0;
-    }
+
+
     private static int contarPuentesIsla(List<List<String>> mapa, int x, int y) {
-        int filas = mapa.size();
-        int cols = mapa.get(0).size();
 
         String cel = mapa.get(x).get(y);
         if (cel == null) return 0;
@@ -26,7 +22,6 @@ public class FuncionesJuego {
 
         int total = 0;
 
-        // --- 1) Contar símbolos pegados en la propia celda (maneja islas adyacentes) ---
         // horizontales pegados
         if (cel.contains("=")) total += 2;
         else if (cel.contains("-")) total += 1;
@@ -34,67 +29,67 @@ public class FuncionesJuego {
         if (cel.contains("║")) total += 2;
         else if (cel.contains("|")) total += 1;
 
-        // --- 2) Si la propia celda no tiene símbolo horizontal, buscar hacia la izquierda/derecha ---
         // izquierda
         if (!cel.contains("-") && !cel.contains("=")) {
-            for (int j = y - 1; j >= 0; j--) {
-                String s = mapa.get(x).get(j);
-                if (s == null) break;
-                s = s.trim();
-                if (s.isEmpty() || s.equals(".") || s.equals("0")) continue; // sigue el intervalo vacío
+            if (enRango(x,y-1,mapa)){
+                String celda = mapa.get(x).get(y-1);
+
+                celda = celda.trim();
                 // si la primera celda no-vacía contiene puente horizontal -> cuenta y para
-                if (s.contains("=")) { total += 2; break; }
-                if (s.contains("-"))  { total += 1; break; }
-                // si la primera celda no-vacía es una isla sin símbolo horizontal -> no hay conexión en esta dirección
-                break;
+                if (celda.contains("=")) {
+                    total += 2;
+                }
+                if (celda.contains("-")) {
+                    total += 1;
+                }
             }
         }
         // derecha
         if (!cel.contains("-") && !cel.contains("=")) {
-            for (int j = y + 1; j < cols; j++) {
-                String s = mapa.get(x).get(j);
-                if (s == null) break;
-                s = s.trim();
-                if (s.isEmpty() || s.equals(".") || s.equals("0")) continue;
-                if (s.contains("=")) { total += 2; break; }
-                if (s.contains("-"))  { total += 1; break; }
-                break;
+            if (enRango(x,y+1,mapa)){
+                String celda = mapa.get(x).get(y+1);
+                celda = celda.trim();
+                if (celda.contains("=")) {
+                    total += 2;
+                }
+                if (celda.contains("-")) {
+                    total += 1;
+                }
             }
         }
-
-        // --- 3) Si la propia celda no tiene símbolo vertical, buscar arriba/abajo ---
         // arriba
         if (!cel.contains("|") && !cel.contains("║")) {
-            for (int i = x - 1; i >= 0; i--) {
-                String s = mapa.get(i).get(y);
-                if (s == null) break;
-                s = s.trim();
-                if (s.isEmpty() || s.equals(".") || s.equals("0")) continue;
-                if (s.contains("║")) { total += 2; break; }
-                if (s.contains("|"))  { total += 1; break; }
-                break;
+            if (enRango(x-1,y,mapa)){
+                String celda = mapa.get(x-1).get(y);
+                celda = celda.trim();
+                if (celda.contains("║")) {
+                    total += 2;
+                }
+                if (celda.contains("|")) {
+                    total += 1;
+                }
             }
         }
         // abajo
         if (!cel.contains("|") && !cel.contains("║")) {
-            for (int i = x + 1; i < filas; i++) {
-                String s = mapa.get(i).get(y);
-                if (s == null) break;
-                s = s.trim();
-                if (s.isEmpty() || s.equals(".") || s.equals("0")) continue;
-                if (s.contains("║")) { total += 2; break; }
-                if (s.contains("|"))  { total += 1; break; }
-                break;
+            if (enRango(x + 1, y, mapa)) {
+                String celda = mapa.get(x + 1).get(y);
+
+                celda = celda.trim();
+                if (celda.contains("║")) {
+                    total += 2;
+                }
+                if (celda.contains("|")) {
+                    total += 1;
+                }
+
             }
         }
-
-        return total;
+            return total;
     }
 
 
-    /**
-     * Devuelve true si la isla en (x,y) ya alcanzó su capacidad.
-     */
+    //si la isla completo puentes
     private static boolean islaCompleta(List<List<String>> mapa, int x, int y) {
         String celda = mapa.get(x).get(y);
         if (celda == null || celda.isEmpty()) return false;
@@ -116,7 +111,7 @@ public class FuncionesJuego {
 
     public static boolean agregarPuente(int x1, int y1, int x2, int y2, int cantidad, List<List<String>> mapa) {
         // validaciones básicas de rango
-        if (!inBounds(x1, y1, mapa) || !inBounds(x2, y2, mapa)) {
+        if (!enRango(x1, y1, mapa) || !enRango(x2, y2, mapa)) {
             System.out.println(" Coordenadas fuera de rango.");
             return false;
         }
@@ -146,13 +141,13 @@ public class FuncionesJuego {
         if ((horizontal && Math.abs(y1 - y2) == 1) || (vertical && Math.abs(x1 - x2) == 1)) {
 
             String isla1 = mapa.get(x1).get(y1);
-            String isla2 = mapa.get(x2).get(y2);
 
-            int actuales = Math.max(conexionesActuales(isla1), conexionesActuales(isla2));
+
+            int actuales = Math.max(contarPuentesIsla(mapa,x1,y1), contarPuentesIsla(mapa,x2,y2));
             int nuevas = actuales + cantidad;
 
             if (nuevas > 2) {
-                System.out.println("❌ Demasiados puentes entre estas islas (máx 2).");
+                System.out.println(" Demasiados puentes entre estas islas (máx 2).");
                 return false;
             }
 
@@ -167,17 +162,17 @@ public class FuncionesJuego {
             mapa.get(x1).set(y1, isla1.replaceAll("[-=|║]*$", "") + simbolo);
 
 
-            System.out.println("✅ Puente agregado entre islas adyacentes. Total: " + nuevas);
+            System.out.println(" Puente agregado entre islas adyacentes. Total: " + nuevas);
             return true;
         }
 
 
 
 
-        // recorrer celdas intermedias y comprobar:
+
         int inicio, fin;
-        int existing = 0; // 0,1 o 2 puentes existentes entre estas islas
-        boolean foundSingle = false, foundDouble = false;
+        int existentes = 0;
+        boolean unico = false, doble = false;
 
         if (horizontal) {
             int fila = x1;
@@ -193,8 +188,8 @@ public class FuncionesJuego {
                     System.out.println(" Cruce detectado (hay puente vertical en el camino).");
                     return false;
                 }
-                if (cel.equals("=")) foundDouble = true;
-                if (cel.equals("-")) foundSingle = true;
+                if (cel.equals("=")) doble = true;
+                if (cel.equals("-")) unico = true;
             }
         } else { // vertical
             int col = y1;
@@ -210,21 +205,21 @@ public class FuncionesJuego {
                     System.out.println(" Cruce detectado (hay puente horizontal en el camino).");
                     return false;
                 }
-                if (cel.equals("║")) foundDouble = true;
-                if (cel.equals("|")) foundSingle = true;
+                if (cel.equals("║")) doble = true;
+                if (cel.equals("|")) unico = true;
             }
         }
 
-        if (foundDouble) existing = 2;
-        else if (foundSingle) existing = 1;
-        else existing = 0;
+        if (doble) existentes = 2;
+        else if (unico) existentes = 1;
+        else existentes = 0;
 
-        if (existing + cantidad > 2) {
+        if (existentes + cantidad > 2) {
             System.out.println(" Demasiados puentes entre estas islas (max 2).");
             return false;
         }
 
-        int target = existing + cantidad;
+        int target = existentes + cantidad;
         if (horizontal) {
             int fila = x1;
             for (int j = Math.min(y1, y2) + 1; j < Math.max(y1, y2); j++) {
