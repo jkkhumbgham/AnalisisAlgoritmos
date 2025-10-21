@@ -1,12 +1,9 @@
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
-import static java.lang.System.exit;
 
 public class ManejadorArchivos {
 
@@ -23,15 +20,20 @@ public class ManejadorArchivos {
         for (int i = 0; i < filas; i++) {
             String linea = br.readLine();
             List<String> fila = new ArrayList<>();
+            List<String> lineaVacia = new ArrayList<>();
             for (int j = 0; j < columnas; j++) {
                 if (linea.charAt(j)=='0'){
                     fila.add("  ");
+                    lineaVacia.add(" ");
                 }else {
                     fila.add(String.valueOf(linea.charAt(j))+" ");
+                    lineaVacia.add(" ");
                 }
-
+                lineaVacia.add(" ");
+                fila.add(" ");
             }
-            lectura.add(fila); // añadimos la fila completa
+            lectura.add(lineaVacia);
+            lectura.add(fila);
         }
         br.close();
         return lectura;

@@ -16,6 +16,9 @@ public class Juego {
         Scanner sc = new Scanner(System.in);
         vista.mostrar();
 
+        final int filasLogicas = mapa.size() / 2;
+        final int columnasLogicas = mapa.get(0).size() / 2;
+
         while (true) {
             System.out.print(" Ingrese puente (x1 y1 x2 y2 cantidad) o -1 para salir: ");
             int x1 = sc.nextInt();
@@ -23,10 +26,18 @@ public class Juego {
             int y1 = sc.nextInt();
             int x2 = sc.nextInt();
             int y2 = sc.nextInt();
-            int c = sc.nextInt();
+            int c  = sc.nextInt();
 
+            if (x1 < 0 || x1 >= filasLogicas || x2 < 0 || x2 >= filasLogicas
+                    || y1 < 0 || y1 >= columnasLogicas || y2 < 0 || y2 >= columnasLogicas) {
+                vista.mostrarMensaje(" Coordenadas fuera de rango lógico (use 0.." + (filasLogicas-1)
+                        + ", 0.." + (columnasLogicas-1) + ").");
+                continue;
+            }
+            int ix1 = toFila(x1), iy1 = toCol(y1);
+            int ix2 = toFila(x2), iy2 = toCol(y2);
 
-            if (FuncionesJuego.agregarPuente(x1, y1, x2, y2, c, mapa)) {
+            if (FuncionesJuego.agregarPuente(ix1, iy1, ix2, iy2, c, mapa)) {
                 vista.mostrar();
             } else {
                 vista.mostrarMensaje(" Movimiento inválido");
@@ -36,6 +47,9 @@ public class Juego {
         sc.close();
         System.out.println(" Juego terminado.");
     }
+
+    private int toFila(int xLogico) { return 2 * xLogico + 1; }
+    private int toCol(int yLogico)  { return 2 * yLogico; }
 
     public static void main(String[] args) {
         try {

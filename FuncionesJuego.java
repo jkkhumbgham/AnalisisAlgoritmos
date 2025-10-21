@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 public class FuncionesJuego {
 
-    //La funcion revisa si los datos dados por el usuario estan dentro del mapa esperado
+    //La funcion revisa si jugada esta en el mapa
     private static boolean enRango(int x, int y, List<List<String>> mapa) {
         return x >= 0 && x < mapa.size() && y >= 0 && y < mapa.get(0).size();
     }
@@ -38,7 +38,7 @@ public class FuncionesJuego {
         }
     }
 
-    // cuenta los puentes que tiene una isla
+    // cuenta los puentes por una isla
     private static int contarPuentesIsla(List<List<String>> mapa, int x, int y) {
         String cel = mapa.get(x).get(y);
         if (cel == null) return 0;
@@ -97,9 +97,8 @@ public class FuncionesJuego {
         }
         return 0;
     }
-
+    //funcion principal verifica jugada y agrega puente
     public static boolean agregarPuente(int x1, int y1, int x2, int y2, int cantidad, List<List<String>> mapa) {
-        // validaciones básicas
         if (!enRango(x1, y1, mapa) || !enRango(x2, y2, mapa)) {
             System.out.println(" Coordenadas fuera de rango.");
             return false;
