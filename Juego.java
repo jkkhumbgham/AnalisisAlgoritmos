@@ -39,6 +39,14 @@ public class Juego {
 
             if (FuncionesJuego.agregarPuente(ix1, iy1, ix2, iy2, c, mapa)) {
                 vista.mostrar();
+                if (FuncionesJuego.verificarVictoria(mapa)) {
+                    vista.mostrarMensaje(" ¡Victoria! Todas las islas están conectadas correctamente.");
+                    break;
+                }
+                if (FuncionesJuego.verificarDerrota(mapa)) {
+                    vista.mostrarMensaje(" Derrota: el estado del tablero es inválido.");
+                    break;
+                }
             } else {
                 vista.mostrarMensaje(" Movimiento inválido");
             }
