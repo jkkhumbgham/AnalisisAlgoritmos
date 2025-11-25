@@ -20,9 +20,22 @@ public class Juego {
         final int columnasLogicas = mapa.get(0).size() / 2;
 
         while (true) {
-            System.out.print(" Ingrese puente (x1 y1 x2 y2 cantidad) o -1 para salir: ");
+            System.out.print(" Ingrese puente (x1 y1 x2 y2 cantidad), -2 para resolver automático o -1 para salir: ");
             int x1 = sc.nextInt();
             if (x1 == -1) break;
+            if (x1 == -2) {
+                boolean resuelto = FuncionesJuego.resolverAutomaticamente(mapa);
+                boolean victoria = FuncionesJuego.verificarVictoria(mapa);
+                vista.mostrar();
+                if (resuelto || victoria) {
+                    vista.mostrarMensaje(" Resuelto automáticamente.");
+                    break;
+                } else {
+                    vista.mostrarMensaje(" No se encontró solución automática desde este estado. Victoria detectada: " + victoria);
+                    vista.mostrarMensaje(" Pasos realizados por el solver:");
+                    continue;
+                }
+            }
             int y1 = sc.nextInt();
             int x2 = sc.nextInt();
             int y2 = sc.nextInt();
