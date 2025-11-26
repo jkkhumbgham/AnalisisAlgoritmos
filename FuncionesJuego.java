@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 public class FuncionesJuego {
 
-    // estado de trazas para el solver automático
     private static boolean solverEnEjecucion = false;
     private static List<String> logSolver = new ArrayList<>();
     private static List<List<String>> ultimoEstadoSolver = null;
@@ -45,7 +44,6 @@ public class FuncionesJuego {
         return 0;
     }
 
-    // reemplaza o añade símbolo si es 1 o dos puentes
     private static String editarSimbolo(String cell, String symbol) {
         if (cell == null) cell = "";
         String trimmed = cell.trim();
@@ -60,10 +58,8 @@ public class FuncionesJuego {
         }
     }
 
-    // cuenta los puentes por una isla
     private static int contarPuentesIsla(List<List<String>> mapa, int x, int y) {
         int total = 0;
-        // contamos puentes por las celdas adyacentes (no dependemos de símbolos insertados en la isla)
         if (enRango(x, y - 1, mapa)) {
             String celda = mapa.get(x).get(y - 1).trim();
             if (celda.contains("=")) total += 2;
@@ -88,16 +84,15 @@ public class FuncionesJuego {
     }
 
 
-    // cuántos puentes ya existen entre 2 islas
     private static int puentesEntre(List<List<String>> mapa, int x1, int y1, int x2, int y2) {
-        if (x1 == x2) { // horizontal
+        if (x1 == x2) {
             int fila = x1;
             for (int j = Math.min(y1,y2)+1; j < Math.max(y1,y2); j++) {
                 String cel = mapa.get(fila).get(j).trim();
                 if (cel.contains("=")) return 2;
                 if (cel.contains("-")) return 1;
             }
-        } else if (y1 == y2) { // vertical
+        } else if (y1 == y2) {
             int col = y1;
             for (int i = Math.min(x1,x2)+1; i < Math.max(x1,x2); i++) {
                 String cel = mapa.get(i).get(col).trim();
@@ -108,27 +103,23 @@ public class FuncionesJuego {
         return 0;
     }
 
-    // verifica que el camino entre dos islas esté libre de cruces o islas intermedias
     private static boolean caminoLibre(List<List<String>> mapa, int x1, int y1, int x2, int y2) {
-        if (x1 == x2) { // horizontal
+        if (x1 == x2) {
             for (int j = Math.min(y1,y2)+1; j < Math.max(y1,y2); j++) {
                 String cel = mapa.get(x1).get(j).trim();
                 if (esIsla(cel)) return false;
-                if (cel.equals("|") || cel.equals("║")) return false; // cruce vertical
-                // permitimos "-" o "=" porque pueden ser parte del mismo puente a reforzar
+                if (cel.equals("|") || cel.equals("║")) return false;
             }
-        } else if (y1 == y2) { // vertical
+        } else if (y1 == y2) {
             for (int i = Math.min(x1,x2)+1; i < Math.max(x1,x2); i++) {
                 String cel = mapa.get(i).get(y1).trim();
                 if (esIsla(cel)) return false;
-                if (cel.equals("-") || cel.equals("=")) return false; // cruce horizontal
-                // permitimos "|" o "║" porque pueden ser parte del mismo puente a reforzar
+                if (cel.equals("-") || cel.equals("=")) return false;
             }
         }
         return true;
     }
 
-    // clona el mapa para backtracking
     private static List<List<String>> clonarMapa(List<List<String>> mapa) {
         List<List<String>> copia = new ArrayList<>();
         for (List<String> fila : mapa) {
@@ -137,7 +128,6 @@ public class FuncionesJuego {
         return copia;
     }
 
-    // sobreescribe el contenido de un mapa con otro manteniendo la referencia externa
     private static void sobreescribirMapa(List<List<String>> destino, List<List<String>> origen) {
         destino.clear();
         for (List<String> fila : origen) {
@@ -145,12 +135,10 @@ public class FuncionesJuego {
         }
     }
 
-    // expone el log acumulado del solver
     public static List<String> obtenerLogSolver() {
         return new ArrayList<>(logSolver);
     }
 
-    // obtiene todas las islas del mapa
     private static List<int[]> obtenerIslas(List<List<String>> mapa) {
         List<int[]> islas = new ArrayList<>();
         for (int i = 0; i < mapa.size(); i++) {
@@ -164,10 +152,6 @@ public class FuncionesJuego {
     }
 
 
-    /**
-     * Intenta resolver el tablero automáticamente aplicando heurísticas y backtracking.
-     * Retorna true si encuentra solución y deja el mapa actualizado; false si no hay solución.
-     */
     public static boolean resolverAutomaticamente(List<List<String>> mapa) {
         if (mapa == null) return false;
         solverEnEjecucion = true;
@@ -184,7 +168,6 @@ public class FuncionesJuego {
         return exito;
     }
 
-    // Debug: imprime estado de cada isla (capacidad vs puentes usados)
     public static void imprimirEstadoIslas(List<List<String>> mapa) {
         List<int[]> islas = obtenerIslas(mapa);
         for (int[] isla : islas) {
@@ -209,7 +192,7 @@ public class FuncionesJuego {
         for (int idx = 0; idx < islas.size(); idx++) {
             int x = islas.get(idx)[0];
             int y = islas.get(idx)[1];
-            for (int dir = 0; dir < 2; dir++) { // derecha y abajo para evitar duplicados
+            for (int dir = 0; dir < 2; dir++) {
                 int nx = x + dx[dir];
                 int ny = y + dy[dir];
                 List<int[]> celdas = new ArrayList<>();
@@ -226,7 +209,6 @@ public class FuncionesJuego {
                         break;
                     }
                     String trimmed = (cel == null) ? "" : cel.trim();
-                    // No avanzamos a través de cruces de orientación opuesta, terminamos búsqueda
                     if (dx[dir] == 0 && (trimmed.equals("|") || trimmed.equals("║"))) break;
                     if (dy[dir] == 0 && (trimmed.equals("-") || trimmed.equals("="))) break;
 
@@ -239,7 +221,6 @@ public class FuncionesJuego {
         return aristas;
     }
 
-    // cruces precomputados entre aristas
     private static Map<Integer, List<Integer>> calcularCruces(List<Arista> aristas, List<int[]> islas) {
         Map<Integer, List<Integer>> cruces = new HashMap<>();
         for (int i = 0; i < aristas.size(); i++) cruces.put(i, new ArrayList<>());
@@ -247,7 +228,6 @@ public class FuncionesJuego {
         for (int i = 0; i < aristas.size(); i++) {
             Arista h = aristas.get(i);
             if (!h.horizontal) continue;
-            // obtener rango horizontal de h
             int hx = islas.get(h.a)[0];
             int hy1 = Math.min(islas.get(h.a)[1], islas.get(h.b)[1]);
             int hy2 = Math.max(islas.get(h.a)[1], islas.get(h.b)[1]);
@@ -257,7 +237,6 @@ public class FuncionesJuego {
                 int vy1 = islas.get(v.a)[0];
                 int vy2 = islas.get(v.b)[0];
                 int vx = islas.get(v.a)[1];
-                // cruzan en un punto interno (no en islas)
                 if (vx > hy1 && vx < hy2 && hx > vy1 && hx < vy2) {
                     cruces.get(i).add(j);
                     cruces.get(j).add(i);
@@ -276,9 +255,7 @@ public class FuncionesJuego {
         for (int val : asignacion) if (val == -1) { quedanSinAsignar = true; break; }
 
         if (!quedanSinAsignar) {
-            // todas asignadas, verificar que todas las islas quedaron completas
             for (int r : restante) if (r != 0) return false;
-            // conectividad
             Map<Integer, Set<Integer>> grafo = new HashMap<>();
             for (int i = 0; i < islas.size(); i++) grafo.put(i, new HashSet<>());
             for (int i = 0; i < aristas.size(); i++) {
@@ -299,19 +276,17 @@ public class FuncionesJuego {
             return vis.size() == islas.size();
         }
 
-        // elegir arista con menor dominio restante (heurística)
         int best = -1;
         int bestOpciones = Integer.MAX_VALUE;
         for (int i = 0; i < aristas.size(); i++) {
             if (asignacion[i] != -1) continue;
             Arista a = aristas.get(i);
             int capMax = Math.min(2, Math.min(restante[a.a], restante[a.b]));
-            // si algún cruce ya tiene valor >0, esta debe ser 0
             boolean bloqueada = false;
             for (int c : cruces.get(i)) {
                 if (asignacion[c] > 0) bloqueada = true;
             }
-            int opciones = bloqueada ? 1 : capMax + 1; // incluye 0
+            int opciones = bloqueada ? 1 : capMax + 1;
             if (opciones < bestOpciones) {
                 bestOpciones = opciones;
                 best = i;
@@ -319,7 +294,6 @@ public class FuncionesJuego {
         }
         if (best == -1) return false;
 
-        // intentar asignaciones para la arista seleccionada
         Arista seleccionada = aristas.get(best);
         boolean bloqueada = false;
         for (int c : cruces.get(best)) if (asignacion[c] > 0) bloqueada = true;
@@ -332,7 +306,7 @@ public class FuncionesJuego {
             for (int v = capMax; v >= 0; v--) valores.add(v);
         }
 
-        asignacion[best] = 0; // evitar reuso en recursión
+        asignacion[best] = 0;
         for (int val : valores) {
             int ra = restante[seleccionada.a] - val;
             int rb = restante[seleccionada.b] - val;
@@ -341,7 +315,6 @@ public class FuncionesJuego {
             restante[seleccionada.b] = rb;
             asignacion[best] = val;
 
-            // poda simple: si alguna isla queda sin suficiente potencial
             boolean valido = true;
             for (int i = 0; i < restante.length && valido; i++) {
                 if (restante[i] == 0) continue;
@@ -350,11 +323,10 @@ public class FuncionesJuego {
                     if (asignacion[j] != -1) continue;
                     Arista a = aristas.get(j);
                     if (a.a != i && a.b != i) continue;
-                    // si está bloqueada por cruce activo, solo aporta 0
                     boolean bloqueado = false;
                     for (int c : cruces.get(j)) if (asignacion[c] > 0) bloqueado = true;
                     if (bloqueado) continue;
-                    potencial += 2; // valor máximo posible por arista
+                    potencial += 2;
                 }
                 if (potencial < restante[i]) valido = false;
             }
@@ -363,7 +335,6 @@ public class FuncionesJuego {
                 return true;
             }
 
-            // backtrack
             restante[seleccionada.a] += val;
             restante[seleccionada.b] += val;
         }
@@ -396,7 +367,6 @@ public class FuncionesJuego {
 
         if (!asignarAristasDFS(aristas, asignacion, restante, cruces, islas)) return false;
 
-        // aplicar solución al mapa
         for (int i = 0; i < aristas.size(); i++) {
             int val = asignacion[i];
             if (val <= 0) continue;
@@ -412,7 +382,6 @@ public class FuncionesJuego {
         }
         return true;
     }
-    //funcion principal verifica jugada y agrega puente
     public static boolean agregarPuente(int x1, int y1, int x2, int y2, int cantidad, List<List<String>> mapa) {
         if (!enRango(x1, y1, mapa) || !enRango(x2, y2, mapa)) {
             System.out.println(" Coordenadas fuera de rango.");
@@ -451,7 +420,6 @@ public class FuncionesJuego {
         int total = existentes + cantidad;
         String fill = horizontal ? (total==1?"-":"=") : (total==1?"|":"║");
 
-        // Validación de camino libre
         if (horizontal) {
             int fila = x1;
             for (int j=Math.min(y1,y2)+1; j<Math.max(y1,y2); j++) {
@@ -479,11 +447,6 @@ public class FuncionesJuego {
         return true;
     }
 
-    /**
-     * Verifica si el tablero cumple las condiciones de victoria.
-     * Revisa que cada isla tenga exactamente sus puentes, que solo existan símbolos válidos,
-     * que todas las islas estén conectadas y que no haya segmentos de puente sueltos.
-     */
     public static boolean verificarVictoria(List<List<String>> mapa) {
         if (mapa == null || mapa.isEmpty() || mapa.get(0).isEmpty()) return false;
 
@@ -493,7 +456,6 @@ public class FuncionesJuego {
         List<int[]> islas = new ArrayList<>();
         Map<String, Integer> indiceIsla = new HashMap<>();
 
-        // Validamos símbolos y registramos islas
         for (int i = 0; i < filas; i++) {
             for (int j = 0; j < columnas; j++) {
                 String celda = mapa.get(i).get(j);
@@ -514,7 +476,6 @@ public class FuncionesJuego {
 
         if (islas.isEmpty()) return false;
 
-        // Cada isla debe tener exactamente el número de puentes indicado
         for (int[] pos : islas) {
             int x = pos[0];
             int y = pos[1];
@@ -531,7 +492,6 @@ public class FuncionesJuego {
         int[] dx = {0, 0, 1, -1};
         int[] dy = {1, -1, 0, 0};
 
-        // Explora en las 4 direcciones para construir conexiones y detectar puentes inválidos
         for (int idx = 0; idx < islas.size(); idx++) {
             int x = islas.get(idx)[0];
             int y = islas.get(idx)[1];
@@ -580,13 +540,11 @@ public class FuncionesJuego {
                         grafo.get(vecinoIdx).add(idx);
                     }
                 } else {
-                    // Si vimos un puente pero no termina en isla, hay un puente suelto
                     if (vioPuente) return false;
                 }
             }
         }
 
-        // Comprobamos conectividad de todas las islas
         Set<Integer> visitadas = new HashSet<>();
         Deque<Integer> stack = new ArrayDeque<>();
         stack.push(0);
@@ -605,12 +563,7 @@ public class FuncionesJuego {
         return visitadas.size() == islas.size();
     }
 
-    /**
-     * Verifica condiciones de derrota: estado inválido por símbolos erróneos,
-     * puentes cruzados/sueltos o islas sobrecargadas de puentes.
-     * Además detecta estados sin solución: componentes desconectados sin posibilidad de unión
-     * o islas insatisfechas que ya no pueden conectarse.
-     */
+
     public static boolean verificarDerrota(List<List<String>> mapa) {
         if (mapa == null || mapa.isEmpty() || mapa.get(0).isEmpty()) return true;
 
@@ -620,7 +573,6 @@ public class FuncionesJuego {
         List<int[]> islas = new ArrayList<>();
         Map<String, Integer> indiceIsla = new HashMap<>();
 
-        // Detecta símbolos inválidos e islas sobrecargadas
         for (int i = 0; i < filas; i++) {
             for (int j = 0; j < columnas; j++) {
                 String celda = mapa.get(i).get(j);
@@ -649,7 +601,6 @@ public class FuncionesJuego {
             grafo.put(idx, new HashSet<>());
         }
 
-        // Revisa puentes sueltos o cruzados partiendo desde cada isla y arma grafo actual
         int[] dx = {0, 0, 1, -1};
         int[] dy = {1, -1, 0, 0};
 
@@ -670,13 +621,13 @@ public class FuncionesJuego {
                             if (celda.equals("-") || celda.equals("=")) {
                                 vioPuente = true;
                             } else {
-                                return true; // puente vertical cruzado o símbolo inválido
+                                return true;
                             }
                         } else {
                             if (celda.equals("|") || celda.equals("║")) {
                                 vioPuente = true;
                             } else {
-                                return true; // puente horizontal cruzado o símbolo inválido
+                                return true;
                             }
                         }
                     }
@@ -684,7 +635,6 @@ public class FuncionesJuego {
                     ny += dy[dir];
                 }
 
-                // Si se encontraron segmentos de puente pero no hay isla al final, es derrota
                 if (vioPuente) {
                     if (enRango(nx, ny, mapa) && esIsla(mapa.get(nx).get(ny))) {
                         int idxVecino = indiceIsla.get(nx + "," + ny);
@@ -697,7 +647,6 @@ public class FuncionesJuego {
             }
         }
 
-        // Calculamos componentes de conectividad con puentes actuales
         int n = islas.size();
         int[] componente = new int[n];
         for (int i = 0; i < n; i++) componente[i] = -1;
@@ -721,7 +670,6 @@ public class FuncionesJuego {
 
         boolean posibleUnion = false;
 
-        // Verifica si hay al menos un puente posible entre componentes distintos
         for (int idx = 0; idx < n; idx++) {
             int x = islas.get(idx)[0];
             int y = islas.get(idx)[1];
@@ -743,7 +691,6 @@ public class FuncionesJuego {
                         int espacioVec = capVec - usadosVec;
                         int existentes = puentesEntre(mapa, x, y, nx, ny);
 
-                        // hay posibilidad de conectar si no excede 2 y hay espacio en ambas islas
                         if (existentes < 2 && espacioRestante > 0 && espacioVec > 0
                                 && caminoLibre(mapa, x, y, nx, ny)) {
                             tienePosibleConexion = true;
@@ -751,11 +698,10 @@ public class FuncionesJuego {
                                 posibleUnion = true;
                             }
                         }
-                        break; // solo la isla más cercana en esa dirección es relevante
+                        break;
                     }
 
                     String trimmed = (cel == null) ? "" : cel.trim();
-                    // Si hay un puente en la dirección opuesta, no podremos conectar en este eje
                     if (dx[dir] == 0 && (trimmed.equals("|") || trimmed.equals("║"))) break;
                     if (dy[dir] == 0 && (trimmed.equals("-") || trimmed.equals("="))) break;
 
@@ -764,11 +710,9 @@ public class FuncionesJuego {
                 }
             }
 
-            // Isla insatisfecha sin posibilidad de conexiones futuras => derrota
             if (espacioRestante > 0 && !tienePosibleConexion) return true;
         }
 
-        // Si hay más de un componente y no existe ninguna conexión posible entre ellos => derrota
         if (compId > 1 && !posibleUnion) return true;
 
         return false;
